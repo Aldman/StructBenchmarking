@@ -58,7 +58,6 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AbstractFactoryExample.cs" />
     <Compile Include="ArrayCreationTasks.cs" />
     <Compile Include="ChartData.cs" />
     <Compile Include="MethodCallTasks.cs" />
