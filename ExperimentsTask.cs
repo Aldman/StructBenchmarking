@@ -7,38 +7,38 @@ namespace StructBenchmarking
     {
         string title;
 
+        private void InitObjects(ref ITask createdStruct, 
+            ref ITask createdClass, int fieldsCount)
+        {
+            if (this is ArrayCreation)
+            {
+                createdStruct = new StructArrayCreationTask(fieldsCount);
+                createdClass = new ClassArrayCreationTask(fieldsCount);
+            }
+            else
+            {
+                createdStruct = new MethodCallWithStructArgumentTask(fieldsCount);
+                createdClass = new MethodCallWithClassArgumentTask(fieldsCount);
+            }
+        }
+
         public ChartData BuildChartData(IBenchmark benchmark, int repetitionsCount)
         {
             var classesTimes = new List<ExperimentResult>();
             var structuresTimes = new List<ExperimentResult>();
-
             foreach (var fieldsCount in Constants.FieldCounts)
             {
-                var createdStruct = new StructArrayCreationTask(fieldsCount);
-                var createdClass = new ClassArrayCreationTask(fieldsCount);
-                double structAverageTime = 0, classAverageTime = 0;
-
-                if (this is ArrayCreation)
-                {
-                    structAverageTime = benchmark
+                ITask createdStruct = null, createdClass = null;
+                InitObjects(ref createdStruct, ref createdClass, fieldsCount);
+                var structAverageTime = benchmark
                     .MeasureDurationInMs(createdStruct, repetitionsCount);
-                    classAverageTime = benchmark
-                        .MeasureDurationInMs(createdClass, repetitionsCount);
-                    title = "Create array";
-                }
-                else if (this is MethodCall)
-                {
-                    structAverageTime = benchmark
-                    .MeasureDurationInMs(createdStruct, repetitionsCount);
-                    classAverageTime = benchmark
-                        .MeasureDurationInMs(createdClass, repetitionsCount);
-                    title = "Call method with argument";
-                }
-
+                var classAverageTime = benchmark
+                    .MeasureDurationInMs(createdClass, repetitionsCount);
                 classesTimes.Add(new ExperimentResult(fieldsCount, classAverageTime));
                 structuresTimes.Add(new ExperimentResult(fieldsCount, structAverageTime));
             }
-
+            if (this is ArrayCreation) title = "Create array";
+            else title = "Call method with argument";
             return new ChartData
             {
                 Title = title,
@@ -50,7 +50,7 @@ namespace StructBenchmarking
 
     public class ArrayCreation : CharDataBuilder { }
     public class MethodCall : CharDataBuilder { }
-    
+
     public class Experiments
     {
         public static ChartData BuildChartDataForArrayCreation(
